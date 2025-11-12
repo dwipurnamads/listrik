@@ -1,10 +1,10 @@
 
 import streamlit as st
 import pandas as pd
-import pickle
+import joblib # Using joblib for loading the model
 
 # Load the trained model
-model = pickle.load(open('model_joblib.pkl', 'rb')) 
+model = joblib.load('model_joblib.pkl')
 
 # Streamlit app title
 st.title('Prediksi Tagihan Listrik Jakarta')
