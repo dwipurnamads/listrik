@@ -1,10 +1,10 @@
 
 import streamlit as st
 import pandas as pd
-import joblib
+import pickle 
 
 # Load the trained model
-model = joblib.load('linear_regression_model.pkl')
+model = pickle.load(open('linear_regression_model_1.pkl', 'rb')) 
 
 # Streamlit app title
 st.title('Prediksi Tagihan Listrik Jakarta')
@@ -18,10 +18,10 @@ def user_input_features():
     ac_units = st.sidebar.slider('Jumlah AC', 0, 3, 1)
     ac_hours_per_day = st.sidebar.slider('Jam AC per Hari', 0.0, 10.0, 5.0)
     family_size = st.sidebar.slider('Jumlah Anggota Keluarga', 2, 6, 4)
-    
+
     month_name = st.sidebar.selectbox('Bulan', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
     tariff_class = st.sidebar.selectbox('Kelas Tarif', ['R1', 'R2', 'R3'])
-    
+
     data = {
         'kwh': kwh,
         'ac_units': ac_units,
@@ -42,10 +42,10 @@ st.write(df_input)
 # List of all columns used during training (extracted from X_train.columns)
 # The order of these columns is crucial for the model prediction
 training_columns = [
-    'kwh', 'ac_units', 'ac_hours_per_day', 'family_size', 
-    'month_name_Aug', 'month_name_Dec', 'month_name_Feb', 'month_name_Jan', 
-    'month_name_Jul', 'month_name_Jun', 'month_name_Mar', 'month_name_May', 
-    'month_name_Nov', 'month_name_Oct', 'month_name_Sep', 
+    'kwh', 'ac_units', 'ac_hours_per_day', 'family_size',
+    'month_name_Aug', 'month_name_Dec', 'month_name_Feb', 'month_name_Jan',
+    'month_name_Jul', 'month_name_Jun', 'month_name_Mar', 'month_name_May',
+    'month_name_Nov', 'month_name_Oct', 'month_name_Sep',
     'tariff_class_R2', 'tariff_class_R3'
 ]
 
