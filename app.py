@@ -4,7 +4,7 @@ import pandas as pd
 import pickle
 
 # Load the trained model
-model = pickle.load(open('listrik/linear_regression_model_1.pkl', 'rb')) 
+model = pickle.load(open('linear_regression_model_1.pkl', 'rb')) 
 
 # Streamlit app title
 st.title('Prediksi Tagihan Listrik Jakarta')
