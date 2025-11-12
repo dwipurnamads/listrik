@@ -1,7 +1,7 @@
 
 import streamlit as st
 import pandas as pd
-import pickle 
+import pickle
 
 # Load the trained model
 model = pickle.load(open('linear_regression_model_1.pkl', 'rb')) 
@@ -38,40 +38,53 @@ df_input = user_input_features()
 st.subheader('Parameter Input Pengguna:')
 st.write(df_input)
 
-# One-hot encode categorical features, matching the training data columns
-# List of all columns used during training (extracted from X_train.columns)
-# The order of these columns is crucial for the model prediction
-training_columns = [
-    'kwh', 'ac_units', 'ac_hours_per_day', 'family_size',
-    'month_name_Aug', 'month_name_Dec', 'month_name_Feb', 'month_name_Jan',
-    'month_name_Jul', 'month_name_Jun', 'month_name_Mar', 'month_name_May',
-    'month_name_Nov', 'month_name_Oct', 'month_name_Sep',
-    'tariff_class_R2', 'tariff_class_R3'
-]
+# Define the exact columns and their dtypes expected by the model during training
+# This list ensures correct order and includes all dummy variables used during training
+training_columns_and_dtypes = {
+    'kwh': 'float64',
+    'ac_units': 'int64',
+    'ac_hours_per_day': 'float64',
+    'family_size': 'int64',
+    'month_name_Aug': 'bool', 'month_name_Dec': 'bool', 'month_name_Feb': 'bool',
+    'month_name_Jan': 'bool', 'month_name_Jul': 'bool', 'month_name_Jun': 'bool',
+    'month_name_Mar': 'bool', 'month_name_May': 'bool', 'month_name_Nov': 'bool',
+    'month_name_Oct': 'bool', 'month_name_Sep': 'bool',
+    'tariff_class_R2': 'bool', 'tariff_class_R3': 'bool'
+}
 
-# Create a DataFrame with all training columns, initialized to 0
-final_input = pd.DataFrame(0, index=[0], columns=training_columns)
+# Create an empty DataFrame with the correct columns and dtypes
+final_input_df = pd.DataFrame(columns=training_columns_and_dtypes.keys())
+for col, dtype in training_columns_and_dtypes.items():
+    final_input_df[col] = final_input_df[col].astype(dtype)
+
+# Add a single row of data, initially all zeros/False
+final_input_df.loc[0] = 0
+for col, dtype in training_columns_and_dtypes.items():
+    if dtype == 'bool':
+        final_input_df.loc[0, col] = False
 
 # Populate numerical features
-final_input['kwh'] = df_input['kwh'][0]
-final_input['ac_units'] = df_input['ac_units'][0]
-final_input['ac_hours_per_day'] = df_input['ac_hours_per_day'][0]
-final_input['family_size'] = df_input['family_size'][0]
+final_input_df.loc[0, 'kwh'] = df_input['kwh'][0]
+final_input_df.loc[0, 'ac_units'] = df_input['ac_units'][0]
+final_input_df.loc[0, 'ac_hours_per_day'] = df_input['ac_hours_per_day'][0]
+final_input_df.loc[0, 'family_size'] = df_input['family_size'][0]
 
 # Populate one-hot encoded categorical features
-if f"month_name_{df_input['month_name'][0]}" in final_input.columns:
-    final_input[f"month_name_{df_input['month_name'][0]}"] = 1
+selected_month_col = f"month_name_{df_input['month_name'][0]}"
+if selected_month_col in final_input_df.columns:
+    final_input_df.loc[0, selected_month_col] = True
 
-if f"tariff_class_{df_input['tariff_class'][0]}" in final_input.columns:
-    final_input[f"tariff_class_{df_input['tariff_class'][0]}"] = 1
-
-
-# Ensure the order of columns in final_input matches the model's expected input
-final_input = final_input[training_columns]
+selected_tariff_col = f"tariff_class_{df_input['tariff_class'][0]}"
+if selected_tariff_col in final_input_df.columns:
+    final_input_df.loc[0, selected_tariff_col] = True
 
 # Make prediction
 if st.sidebar.button('Prediksi Tagihan'):
-    prediction = model.predict(final_input)
-    st.subheader('Hasil Prediksi Tagihan Listrik:')
-    st.write(f"Tagihan Diprediksi: Rp {prediction[0]:,.2f}")
+    try:
+        prediction = model.predict(final_input_df) # Use the new DataFrame name
+        st.subheader('Hasil Prediksi Tagihan Listrik:')
+        st.write(f"Tagihan Diprediksi: Rp {prediction[0]:,.2f}")
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat melakukan prediksi: {e}")
+        st.exception(e) # Show full traceback
 
